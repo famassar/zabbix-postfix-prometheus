@@ -1,0 +1,184 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    -
+      uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    -
+      uuid: 4058d96ca7104bc19217edcb622e3a82
+      template: 'Postfix queues'
+      name: 'Postfix queues'
+      groups:
+        -
+          name: Templates/Applications
+      items:
+        -
+          uuid: d9407ec6c537437ab33f563ce906ec7c
+          name: 'Active Queue Messages'
+          type: DEPENDENT
+          key: active.queue.messages
+          delay: '0'
+          preprocessing:
+            -
+              type: PROMETHEUS_PATTERN
+              parameters:
+                - 'postfix_showq_message_size_bytes_count{queue="active"}'
+                - value
+                - ''
+          master_item:
+            key: postfix.metrics
+          tags:
+            -
+              tag: Application
+              value: Postfix
+          triggers:
+            -
+              uuid: f13498caefe94f70a219f251353786bf
+              expression: 'max(/Postfix queues/active.queue.messages,30m)=0'
+              name: 'No Messages in active queue'
+              priority: AVERAGE
+        -
+          uuid: 61bb715da1df4eb9b1f6756bbcca41e1
+          name: 'Deferred Queue Messages'
+          type: DEPENDENT
+          key: deferred.queue.messages
+          delay: '0'
+          preprocessing:
+            -
+              type: PROMETHEUS_PATTERN
+              parameters:
+                - 'postfix_showq_message_size_bytes_count{queue="deferred"}'
+                - value
+                - ''
+          master_item:
+            key: postfix.metrics
+          tags:
+            -
+              tag: Application
+              value: Postfix
+          triggers:
+            -
+              uuid: dbf8a6ea109b44d98f24602f6ff44462
+              expression: 'min(/Postfix queues/deferred.queue.messages,30m)>{$MAX_DEFERRED_MESSAGES}'
+              name: 'Deferred Queue Messages'
+              priority: AVERAGE
+        -
+          uuid: ed83971c22cc4816a8170d3ca220cc1f
+          name: 'Hold Queue Messages'
+          type: DEPENDENT
+          key: hold.queue.messages
+          delay: '0'
+          preprocessing:
+            -
+              type: PROMETHEUS_PATTERN
+              parameters:
+                - 'postfix_showq_message_size_bytes_count{queue="hold"}'
+                - value
+                - ''
+          master_item:
+            key: postfix.metrics
+          tags:
+            -
+              tag: Application
+              value: Postfix
+        -
+          uuid: 4107af2f59424116bcdfdd7ffd4fcf9d
+          name: 'Incoming Queue Messages'
+          type: DEPENDENT
+          key: incoming.queue.messages
+          delay: '0'
+          preprocessing:
+            -
+              type: PROMETHEUS_PATTERN
+              parameters:
+                - 'postfix_showq_message_size_bytes_count{queue="incoming"}'
+                - value
+                - ''
+          master_item:
+            key: postfix.metrics
+          tags:
+            -
+              tag: Application
+              value: Postfix
+        -
+          uuid: b7d1358abf774cac9a5016100c8a8ebd
+          name: 'Maildrop Queue Messages'
+          type: DEPENDENT
+          key: maildrop.queue.messages
+          delay: '0'
+          preprocessing:
+            -
+              type: PROMETHEUS_PATTERN
+              parameters:
+                - 'postfix_showq_message_size_bytes_count{queue="maildrop"}'
+                - value
+                - ''
+          master_item:
+            key: postfix.metrics
+          tags:
+            -
+              tag: Application
+              value: Postfix
+        -
+          uuid: d4d46373ced047fe8bcdb291fa374735
+          name: 'Postfix Metrics'
+          type: HTTP_AGENT
+          key: postfix.metrics
+          history: '0'
+          trends: '0'
+          value_type: TEXT
+          url: 'http://{HOST.CONN}:{$PORT}/{$PATH}'
+          tags:
+            -
+              tag: Application
+              value: Postfix
+      macros:
+        -
+          macro: '{$MAX_DEFERRED_MESSAGES}'
+          value: '50'
+        -
+          macro: '{$PATH}'
+          value: metrics
+        -
+          macro: '{$PORT}'
+          value: '9154'
+  graphs:
+    -
+      uuid: dff9b6f6a2d14a08a2369eb6aa90ad4e
+      name: 'Postfix Queues'
+      graph_items:
+        -
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'Postfix queues'
+            key: active.queue.messages
+        -
+          sortorder: '1'
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: 'Postfix queues'
+            key: deferred.queue.messages
+        -
+          sortorder: '2'
+          color: 2774A4
+          calc_fnc: ALL
+          item:
+            host: 'Postfix queues'
+            key: hold.queue.messages
+        -
+          sortorder: '3'
+          color: F7941D
+          calc_fnc: ALL
+          item:
+            host: 'Postfix queues'
+            key: incoming.queue.messages
+        -
+          sortorder: '4'
+          color: FC6EA3
+          calc_fnc: ALL
+          item:
+            host: 'Postfix queues'
+            key: maildrop.queue.messages
