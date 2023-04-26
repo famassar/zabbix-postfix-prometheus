@@ -1,5 +1,3 @@
-# zabbix-postfix-prometheus
-A Zabbix template for monitoring postfix queues using Prometheus Exporter
 This is a simple template for monitoring postfix queue using Prometheus exporter.
 1) Install Prometheus exporter for Postfix: https://github.com/kumina/postfix_exporter
 2) Verify the Zabbix server can read from Prometheus exporter: curl http://[POSTFIX_IP]:9154/metrics
